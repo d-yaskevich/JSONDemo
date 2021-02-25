@@ -56,7 +56,9 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberView
         }
 
         public void onBind(Member item) {
-            //todo
+            //todo заполнить данными класса - положить данные в нужные поля - view элементы
+            //tvInfo.setText(item.name + "/n" + item.age + "/n" + item.secretIdentity + "/n" + item.powers);
+            tvInfo.setText(item.toString());
         }
     }
 }
