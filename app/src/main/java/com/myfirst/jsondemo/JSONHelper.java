@@ -24,10 +24,11 @@ import java.util.Locale;
 public class JSONHelper {
 
     private static final String TAG = JSONHelper.class.getSimpleName();
+    private static final String TAG_MEMBERS = "MEMBERS";
 
     private static final String DATE_FORMAT = "yyyy-MM-dd hh:mm:ss a";
 
-    private static String getJsonString(Context context) {
+    public static String getJsonString(Context context) {
         StringBuilder stringBuilder = new StringBuilder();
 
         try (InputStream inputStream = context.getResources().openRawResource(R.raw.json_example);
@@ -36,7 +37,7 @@ public class JSONHelper {
 
             String line = reader.readLine();
             while (line != null) {
-                stringBuilder.append(line).append('\n');
+                stringBuilder.append(line);
                 line = reader.readLine();
             }
         } catch (IOException e) {
@@ -50,7 +51,7 @@ public class JSONHelper {
 
     // Using internal library
 
-    public static Info fromJson(Context context, String jsonStr) {
+    public static Info fromJson(String jsonStr) {
         Info info = new Info();
 
         if (jsonStr != null && !jsonStr.isEmpty()) {
@@ -70,7 +71,8 @@ public class JSONHelper {
                 JSONArray members = jsonObj.getJSONArray("members");
                 for (int i = 0; i < members.length(); i++) {
                     Member member = new Member();
-                    JSONObject jsonMember = members.getJSONObject(0);
+                    Log.e(TAG_MEMBERS, "members: " + members);
+                    JSONObject jsonMember = members.getJSONObject(i);
 
                     member.name = jsonMember.getString("name");
                     member.age = jsonMember.getInt("age");
@@ -79,6 +81,7 @@ public class JSONHelper {
                     JSONArray powers = jsonMember.getJSONArray("powers");
                     for (int j = 0; j < powers.length(); j++) {
                         String power = powers.getString(j);
+                        Log.e(TAG_MEMBERS, "power: " + powers.getString(j));
                         member.powers.add(power);
                     }
 
@@ -88,24 +91,25 @@ public class JSONHelper {
             } catch (final JSONException e) {
                 String message = e.getMessage();
                 Log.e(TAG, "Json parsing error: " + message);
-                Toast.makeText(context, "Json parsing error: " + message, Toast.LENGTH_LONG).show();
+//                Toast.makeText(context, "Json parsing error: " + message, Toast.LENGTH_LONG).show();
             } catch (final ParseException e) {
                 String message = e.getMessage();
                 Log.e(TAG, "Date parsing error: " + message);
-                Toast.makeText(context, "Date parsing error: " + message, Toast.LENGTH_LONG).show();
+//                Toast.makeText(context, "Date parsing error: " + message, Toast.LENGTH_LONG).show();
             }
         }
 
         return info;
     }
 
-    public static String toJson(Context context, Info info) {
+    public static String toJson(Info info) {
         JSONObject jsonObject = new JSONObject();
 
         try {
             jsonObject.put("squadName", info.squadName);
             jsonObject.put("homeTown", info.homeTown);
             jsonObject.put("formed", info.formed);
+            jsonObject.put("secretBase", info.secretBase);
             jsonObject.put("active", info.active);
 
             SimpleDateFormat format = new SimpleDateFormat(DATE_FORMAT, Locale.getDefault());
@@ -114,16 +118,28 @@ public class JSONHelper {
 
             JSONArray jsonMembers = new JSONArray();
 
-            for (Member member : info.members) {
-                //todo
-            }
+            for (Member member : info.members){
+                JSONObject jsonMember = new JSONObject();
 
+                jsonMember.put("name", member.name);
+                jsonMember.put("age", member.age);
+                jsonMember.put("secretIdentity", member.secretIdentity);
+                jsonMembers.put(jsonMember);
+
+                JSONArray powers = new JSONArray();
+                for (String power : member.powers) {
+                    powers.put(power);
+                }
+
+
+                jsonMember.put("powers", powers);
+            }
             jsonObject.put("members", jsonMembers);
 
         } catch (JSONException e) {
             String message = e.getMessage();
             Log.e(TAG, "Json parsing error: " + message);
-            Toast.makeText(context, "Json parsing error: " + message, Toast.LENGTH_LONG).show();
+//            Toast.makeText(context, "Json parsing error: " + message, Toast.LENGTH_LONG).show();
         }
 
         return jsonObject.toString();
